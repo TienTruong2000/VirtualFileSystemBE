@@ -45,6 +45,7 @@ public class FileEntity {
     private List<FileEntity> children;
 
     public long getSize() {
+        if (this.children == null) return 0;
         return this.children.stream().map(FileEntity::getSize).mapToLong(Long::longValue).sum();
     }
 }
