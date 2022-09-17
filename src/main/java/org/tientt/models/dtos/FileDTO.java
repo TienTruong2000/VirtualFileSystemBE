@@ -18,4 +18,5 @@ public class FileDTO {
     private FileType type;
     private String content;
     private List<FileDTO> children;
+    private long size;
 }

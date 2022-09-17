@@ -43,4 +43,8 @@ public class FileEntity {
     @OneToMany
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     private List<FileEntity> children;
+
+    public long getSize() {
+        return this.children.stream().map(FileEntity::getSize).mapToLong(Long::longValue).sum();
+    }
 }

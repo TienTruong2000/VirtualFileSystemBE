@@ -7,7 +7,7 @@ import java.util.List;
 public interface DirectoryService {
     FileDTO create(String path, boolean isCreateParent);
 
-    FileDTO getById(String id);
+    FileDTO getById(long id);
 
     List<FileDTO> getAll();
 

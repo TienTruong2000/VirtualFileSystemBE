@@ -49,21 +49,21 @@ public class DirectoryServiceImpl implements DirectoryService {
         return -1;
     }
 
-    private void validateDirectoryName(String name){
+    private void validateDirectoryName(String name) {
         Matcher matcher = fileNamePattern.matcher(name);
         if (!matcher.matches()) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.Directory.INVALID_NAME));
         }
     }
 
-    private void validateDuplicateName(FileEntity parentDirectory, String name){
+    private void validateDuplicateName(FileEntity parentDirectory, String name) {
         int childIndex = findChildIndexByName(parentDirectory, name);
         if (childIndex != -1) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.Directory.DUPLICATED_NAME));
         }
     }
 
-    private FileEntity getNearestParentElement(String[] pathElements){
+    private FileEntity getNearestParentElement(String[] pathElements) {
         FileEntity parentDirectory = fileRepository.getRootDirectory();
         for (int i = 1; i < pathElements.length - 1; i++) {
             String pathElement = pathElements[i];
@@ -83,7 +83,7 @@ public class DirectoryServiceImpl implements DirectoryService {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.Directory.EMPTY_PATH));
         //separate path
         String[] pathElements = path.split(PATH_SEPARATOR);
-        if (pathElements.length == 0){
+        if (pathElements.length == 0) {
             //the only time this happens is when the path is "/"
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.Directory.INVALID_NAME));
         }
@@ -107,8 +107,8 @@ public class DirectoryServiceImpl implements DirectoryService {
     }
 
     @Override
-    public FileDTO getById(String id) {
-        return null;
+    public FileDTO getById(long id) {
+        return fileRepository.findById(id).map(fileMapper::toDTO).orElse(null);
     }
 
     @Override

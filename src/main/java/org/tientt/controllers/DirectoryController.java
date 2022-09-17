@@ -2,10 +2,7 @@ package org.tientt.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.tientt.constants.ApiEndPoint;
 import org.tientt.models.dtos.FileDTO;
 import org.tientt.services.interfaces.DirectoryService;
@@ -17,9 +14,10 @@ import java.util.List;
 public class DirectoryController {
     private final DirectoryService directoryService;
 
-    @GetMapping(ApiEndPoint.Directory.DIRECTORY_END_POINT)
-    public ResponseEntity<?> getAll(){
-        List<FileDTO> result = directoryService.getAll();
+    @GetMapping(ApiEndPoint.Directory.DIRECTORY_END_POINT + "/{id}")
+    public ResponseEntity<?> getDirectoryById(@PathVariable long id){
+        FileDTO result = directoryService.getById(id);
+        if (result == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(result);
     }
 
