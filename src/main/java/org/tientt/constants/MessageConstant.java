@@ -19,6 +19,8 @@ public final class MessageConstant {
         public static final String MISSING_PARENT = "error.file.missing-parent";
         public static final String INVALID_NAME = "error.file.invalid-name";
         public static final String DUPLICATED_NAME = "error.file.duplicated-name";
+
+        public static final String PATH_NOT_FOUND = "error.file.path-not-found";
     }
 
 

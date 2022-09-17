@@ -47,10 +47,10 @@ public class TextFileServiceImpl extends FileService implements TextFileService 
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
         }
 
-        String directoryName = pathElements[pathElements.length - 1].trim();
+        String fileName = pathElements[pathElements.length - 1].trim();
         FileEntity parentDirectory = getNearestParentElement(pathElements);
-        validateDirectoryName(directoryName);
-        validateDuplicateName(parentDirectory, directoryName);
+        validateDirectoryName(fileName);
+        validateDuplicateName(parentDirectory, fileName);
 
         //create new directory
         FileEntity newFile = new FileEntity();
@@ -59,10 +59,29 @@ public class TextFileServiceImpl extends FileService implements TextFileService 
         newFile.setUpdatedAt(clock.millis());
         newFile.setType(FileType.REGULAR_FILE);
         newFile.setParent(parentDirectory);
-        newFile.setName(directoryName);
+        newFile.setName(fileName);
         newFile.setContent(content);
         newFile = fileRepository.save(newFile);
 
         return fileMapper.toDTO(newFile);
+    }
+
+    @Override
+    public FileDTO getFileByPath(String path) {
+        if (path == null || path.isEmpty())
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
+        //separate path
+        String[] pathElements = path.split(PATH_SEPARATOR);
+        if (pathElements.length == 0) {
+            //the only time this happens is when the path is "/"
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
+        }
+        String fileName = pathElements[pathElements.length - 1].trim();
+        FileEntity parentDirectory = getNearestParentElement(pathElements);
+
+        int index = findChildIndexByName(parentDirectory, fileName);
+        if (index == -1)
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
+        return fileMapper.toDTO(parentDirectory.getChildren().get(index));
     }
 }

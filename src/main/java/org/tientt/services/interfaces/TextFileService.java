@@ -4,4 +4,6 @@ import org.tientt.models.dtos.FileDTO;
 
 public interface TextFileService {
     FileDTO create(String path, String content);
+
+    FileDTO getFileByPath(String path);
 }
