@@ -10,16 +10,15 @@ import org.tientt.models.dtos.FileDTO;
 import org.tientt.models.entities.FileEntity;
 import org.tientt.models.entities.FileType;
 import org.tientt.repositories.FileRepository;
-import org.tientt.services.interfaces.DirectoryService;
+import org.tientt.services.interfaces.TextFileService;
 import org.tientt.services.mappers.FileMapper;
 import org.tientt.utils.MessageUtil;
 
 import java.time.Clock;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
-public class DirectoryServiceImpl extends FileService implements DirectoryService {
+public class TextFileServiceImpl extends FileService implements TextFileService {
 
     @Value("${file.path.separator}")
     private String PATH_SEPARATOR;
@@ -38,7 +37,7 @@ public class DirectoryServiceImpl extends FileService implements DirectoryServic
 
     @Override
     @Transactional
-    public FileDTO create(String path, boolean isCreateParent) {
+    public FileDTO create(String path, String content) {
         if (path == null || path.isEmpty())
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
         //separate path
@@ -54,35 +53,16 @@ public class DirectoryServiceImpl extends FileService implements DirectoryServic
         validateDuplicateName(parentDirectory, directoryName);
 
         //create new directory
-        FileEntity newDirectory = new FileEntity();
-        newDirectory.setId(snowflakeIdGenerator.next());
-        newDirectory.setCreatedAt(clock.millis());
-        newDirectory.setUpdatedAt(clock.millis());
-        newDirectory.setType(FileType.DIRECTORY);
-        newDirectory.setParent(parentDirectory);
-        newDirectory.setName(directoryName);
-        newDirectory = fileRepository.save(newDirectory);
+        FileEntity newFile = new FileEntity();
+        newFile.setId(snowflakeIdGenerator.next());
+        newFile.setCreatedAt(clock.millis());
+        newFile.setUpdatedAt(clock.millis());
+        newFile.setType(FileType.REGULAR_FILE);
+        newFile.setParent(parentDirectory);
+        newFile.setName(directoryName);
+        newFile.setContent(content);
+        newFile = fileRepository.save(newFile);
 
-        return fileMapper.toDTO(newDirectory);
-    }
-
-    @Override
-    public FileDTO getById(long id) {
-        return fileRepository.findById(id).map(fileMapper::toDTO).orElse(null);
-    }
-
-    @Override
-    public List<FileDTO> getAll() {
-        return null;
-    }
-
-    @Override
-    public FileDTO move(String sourcePath, String destinationPath) {
-        return null;
-    }
-
-    @Override
-    public FileDTO deleteFromPath(String path) {
-        return null;
+        return fileMapper.toDTO(newFile);
     }
 }

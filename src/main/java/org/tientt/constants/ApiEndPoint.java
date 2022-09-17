@@ -8,9 +8,9 @@ public final class ApiEndPoint {
     public static final String VERSION = "/v1";
     public static final String API_ENDPOINT = ROOT_ENDPOINT + VERSION;
 
-    public static final class File {
-        private File(){}
-        public static final String FILE_END_POINT = API_ENDPOINT + "/files";
+    public static final class TextFile {
+        private TextFile(){}
+        public static final String TEXT_FILE_END_POINT = API_ENDPOINT + "/text_files";
     }
 
     public static final class Directory {
@@ -18,4 +18,5 @@ public final class ApiEndPoint {
 
         public static final String DIRECTORY_END_POINT = API_ENDPOINT + "/directories";
     }
+
 }

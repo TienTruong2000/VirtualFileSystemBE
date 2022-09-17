@@ -1,4 +1,4 @@
-package org.tientt.controllers;
+package org.tientt.controllers.files;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import org.tientt.constants.ApiEndPoint;
 import org.tientt.models.dtos.FileDTO;
 import org.tientt.services.interfaces.DirectoryService;
-
-import java.util.List;
 
 @RestController
 @AllArgsConstructor
