@@ -77,6 +77,8 @@ public class TextFileServiceImpl extends FileServiceImpl implements TextFileServ
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
         }
         FileEntity file = getFileFromPath(pathElements);
+        if (file.getType() != FileType.REGULAR_FILE)
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.FILE_IS_NOT_TEXT_FILE));
         return fileMapper.toDTO(file);
     }
 }

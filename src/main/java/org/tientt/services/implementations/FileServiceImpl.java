@@ -105,18 +105,31 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public FileDTO moveFile(String sourcePath, String destinationPath) {
-        if (sourcePath == null || sourcePath.isEmpty() || destinationPath == null || destinationPath.isEmpty())
-            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
+        if (sourcePath == null || sourcePath.isEmpty())
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.SOURCE_PATH_NOT_FOUND));
+        if (destinationPath == null || destinationPath.isEmpty()) {
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_NOT_FOUND));
+        }
         if (destinationPath.contains(sourcePath))
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_IS_SUB_SOURCE_PATH));
         String[] sourcePathElements = sourcePath.split(PATH_SEPARATOR);
         String[] destinationPathElements = destinationPath.split(PATH_SEPARATOR);
 
-        FileEntity sourceFile = getFileFromPath(sourcePathElements);
-        FileEntity destinationFile = getFileFromPath(destinationPathElements);
+        FileEntity sourceFile;
+        FileEntity destinationFile;
+        try {
+            sourceFile = getFileFromPath(sourcePathElements);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.SOURCE_PATH_NOT_FOUND));
+        }
+        try {
+            destinationFile = getFileFromPath(destinationPathElements);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_NOT_FOUND));
+        }
 
-        if (destinationFile.getType() != FileType.DIRECTORY){
-            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
+        if (destinationFile.getType() != FileType.DIRECTORY) {
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_IS_NOT_DIRECTORY));
         }
         sourceFile.setParent(destinationFile);
         return fileMapper.toDTO(sourceFile);

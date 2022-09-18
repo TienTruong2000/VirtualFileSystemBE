@@ -82,12 +82,11 @@ public class DirectoryServiceImpl extends FileServiceImpl implements DirectorySe
             return fileMapper.toDTO(fileRepository.getRootDirectory());
         }
 
-        String directoryName = pathElements[pathElements.length - 1].trim();
-        FileEntity parentDirectory = getNearestParentElement(pathElements);
-        int index = findChildIndexByName(parentDirectory, directoryName);
-        if (index == -1)
-            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
-        return fileMapper.toDTO(parentDirectory.getChildren().get(index));
+        FileEntity directory = getFileFromPath(pathElements);
+        if (directory.getType() != FileType.DIRECTORY){
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.FILE_IS_NOT_DIRECTORY));
+        }
+        return fileMapper.toDTO(directory);
     }
 
     @Override
