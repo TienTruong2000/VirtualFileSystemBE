@@ -89,7 +89,6 @@ class DirectoryServiceImplTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        fileRepository.deleteAll();
         autoCloseable.close();
     }
 

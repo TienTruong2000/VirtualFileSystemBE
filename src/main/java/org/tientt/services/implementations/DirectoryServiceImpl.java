@@ -77,15 +77,8 @@ public class DirectoryServiceImpl extends FileServiceImpl implements DirectorySe
     public FileDTO getByPath(String path) {
         if (path == null || path.isEmpty())
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
-        //separate path
-        String[] pathElements = path.split(PATH_SEPARATOR);
-        if (pathElements.length == 0) {
-            //the only time this happens is when the path is "/"
-            return fileMapper.toDTO(fileRepository.getRootDirectory());
-        }
-
-        FileEntity directory = getFileFromPath(pathElements);
-        if (directory.getType() != FileType.DIRECTORY){
+        FileEntity directory = getFileFromPath(path);
+        if (directory.getType() != FileType.DIRECTORY && directory.getType() != FileType.ROOT){
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.FILE_IS_NOT_DIRECTORY));
         }
         return fileMapper.toDTO(directory);

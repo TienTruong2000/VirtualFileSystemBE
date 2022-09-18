@@ -6,8 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.transaction.annotation.Transactional;
 import org.tientt.models.entities.FileEntity;
 import org.tientt.models.entities.FileType;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -19,14 +22,34 @@ public class FileRepositoryTest {
     private FileRepository fileRepository;
 
     @BeforeEach
+    @Transactional
     public void setup() {
         FileEntity rootEntity = new FileEntity();
+        FileEntity childDirectory = new FileEntity();
+        FileEntity complexPathChildDirectory = new FileEntity();
+
         rootEntity.setType(FileType.ROOT);
         rootEntity.setId(1);
         rootEntity.setName("root");
         rootEntity.setCreatedAt(0);
         rootEntity.setUpdatedAt(0);
-        rootEntity = fileRepository.save(rootEntity);
+
+        childDirectory.setCreatedAt(1L);
+        childDirectory.setId(123L);
+        childDirectory.setName("Name");
+        childDirectory.setParent(rootEntity);
+        childDirectory.setType(FileType.DIRECTORY);
+        childDirectory.setUpdatedAt(1L);
+
+        complexPathChildDirectory.setCreatedAt(1L);
+        complexPathChildDirectory.setId(1234L);
+        complexPathChildDirectory.setName("Complex name");
+        complexPathChildDirectory.setParent(childDirectory);
+        complexPathChildDirectory.setType(FileType.DIRECTORY);
+        complexPathChildDirectory.setUpdatedAt(1L);
+
+        fileRepository.saveAll(List.of(rootEntity, childDirectory, complexPathChildDirectory));
+
     }
 
     @AfterEach
@@ -35,11 +58,27 @@ public class FileRepositoryTest {
     }
 
     @Test
-    void itShouldGetRootDirectory() {
+    void getRootDirectory() {
         //when
         FileEntity rootDirectory = fileRepository.getRootDirectory();
         //then
         assertThat(rootDirectory.getType()).isEqualTo(FileType.ROOT);
     }
+
+    @Test
+    @Transactional
+    void delete() {
+        //given
+        FileEntity childDirectory = fileRepository.findById(123L).get();
+        //when
+        fileRepository.delete(childDirectory);
+        //then
+        FileEntity rootDirectory = fileRepository.getRootDirectory();
+        assertThat(rootDirectory.getChildren()).isNull();
+
+
+    }
+
+
 
 }

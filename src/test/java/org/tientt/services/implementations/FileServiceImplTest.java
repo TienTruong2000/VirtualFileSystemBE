@@ -1,169 +1,389 @@
 package org.tientt.services.implementations;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.tientt.models.dtos.FileDTO;
 import org.tientt.models.entities.FileEntity;
 import org.tientt.models.entities.FileType;
 import org.tientt.repositories.FileRepository;
 import org.tientt.services.mappers.FileMapper;
+import org.tientt.services.mappers.FileMapperImpl;
 
-@ContextConfiguration(classes = {FileServiceImpl.class})
-@ExtendWith(SpringExtension.class)
+import java.util.List;
+
+import static org.assertj.core.api.AssertionsForClassTypes.*;
+import static org.assertj.core.api.BDDAssumptions.given;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class FileServiceImplTest {
-    @MockBean
-    private FileMapper fileMapper;
 
-    @MockBean
+    private FileServiceImpl underTest;
+
+    private AutoCloseable autoCloseable;
+
+    @Mock
+    private FileMapperImpl fileMapper;
+
+    @Mock
     private FileRepository fileRepository;
 
-    @Autowired
-    private FileServiceImpl fileServiceImpl;
+    private final String PATH_SEPARATOR = "/";
 
-    /**
-     * Method under test: {@link FileServiceImpl#getNearestParentElement(String[])}
-     */
-    @Test
-    void testGetNearestParentElement() {
-        assertThrows(IllegalArgumentException.class,
-                () -> fileServiceImpl.getNearestParentElement(new String[]{"Path Elements"}));
+    private final FileEntity rootEntity = new FileEntity();
+
+    private final FileEntity childDirectory = new FileEntity();
+
+    private final FileEntity complexPathChildDirectory = new FileEntity();
+
+    @BeforeEach
+    void setUp() {
+        autoCloseable = MockitoAnnotations.openMocks(this);
+        underTest = new DirectoryServiceImpl();
+        underTest.setFileRepository(fileRepository);
+        underTest.setFileMapper(fileMapper);
+        underTest.setPATH_SEPARATOR(PATH_SEPARATOR);
+        ReflectionTestUtils.setField(underTest, FileServiceImpl.class, "fileRepository", fileRepository, FileRepository.class);
+        ReflectionTestUtils.setField(underTest, FileServiceImpl.class, "fileMapper", fileMapper, FileMapper.class);
+        ReflectionTestUtils.setField(underTest, FileServiceImpl.class, "PATH_SEPARATOR", PATH_SEPARATOR, String.class);
+
+
+        rootEntity.setType(FileType.ROOT);
+        rootEntity.setId(1);
+        rootEntity.setName("root");
+        rootEntity.setCreatedAt(0);
+        rootEntity.setUpdatedAt(0);
+        rootEntity.setChildren(List.of(childDirectory));
+
+        childDirectory.setCreatedAt(1L);
+        childDirectory.setId(123L);
+        childDirectory.setName("Name");
+        childDirectory.setParent(rootEntity);
+        childDirectory.setType(FileType.DIRECTORY);
+        childDirectory.setUpdatedAt(1L);
+        childDirectory.setChildren(List.of(complexPathChildDirectory));
+
+        complexPathChildDirectory.setCreatedAt(1L);
+        complexPathChildDirectory.setId(123L);
+        complexPathChildDirectory.setName("Complex name");
+        complexPathChildDirectory.setParent(childDirectory);
+        complexPathChildDirectory.setType(FileType.DIRECTORY);
+        complexPathChildDirectory.setUpdatedAt(1L);
     }
 
-    /**
-     * Method under test: {@link FileServiceImpl#getNearestParentElement(String[])}
-     */
-    @Test
-    void testGetNearestParentElement2() {
-        FileEntity fileEntity = new FileEntity();
-        fileEntity.setChildren(new ArrayList<>());
-        fileEntity.setContent("Not all who wander are lost");
-        fileEntity.setCreatedAt(1L);
-        fileEntity.setId(123L);
-        fileEntity.setName("Name");
-        fileEntity.setParent(new FileEntity());
-        fileEntity.setType(FileType.REGULAR_FILE);
-        fileEntity.setUpdatedAt(1L);
-
-        FileEntity fileEntity1 = new FileEntity();
-        fileEntity1.setChildren(new ArrayList<>());
-        fileEntity1.setContent("Not all who wander are lost");
-        fileEntity1.setCreatedAt(1L);
-        fileEntity1.setId(123L);
-        fileEntity1.setName("Name");
-        fileEntity1.setParent(fileEntity);
-        fileEntity1.setType(FileType.REGULAR_FILE);
-        fileEntity1.setUpdatedAt(1L);
-
-        FileEntity fileEntity2 = new FileEntity();
-        fileEntity2.setChildren(new ArrayList<>());
-        fileEntity2.setContent("Not all who wander are lost");
-        fileEntity2.setCreatedAt(1L);
-        fileEntity2.setId(123L);
-        fileEntity2.setName("Name");
-        fileEntity2.setParent(fileEntity1);
-        fileEntity2.setType(FileType.REGULAR_FILE);
-        fileEntity2.setUpdatedAt(1L);
-
-        FileEntity fileEntity3 = new FileEntity();
-        fileEntity3.setChildren(new ArrayList<>());
-        fileEntity3.setContent("Not all who wander are lost");
-        fileEntity3.setCreatedAt(1L);
-        fileEntity3.setId(123L);
-        fileEntity3.setName("Name");
-        fileEntity3.setParent(fileEntity2);
-        fileEntity3.setType(FileType.REGULAR_FILE);
-        fileEntity3.setUpdatedAt(1L);
-
-        FileEntity fileEntity4 = new FileEntity();
-        fileEntity4.setChildren(new ArrayList<>());
-        fileEntity4.setContent("Not all who wander are lost");
-        fileEntity4.setCreatedAt(1L);
-        fileEntity4.setId(123L);
-        fileEntity4.setName("Name");
-        fileEntity4.setParent(fileEntity3);
-        fileEntity4.setType(FileType.REGULAR_FILE);
-        fileEntity4.setUpdatedAt(1L);
-        when(fileRepository.getRootDirectory()).thenReturn(fileEntity4);
-        assertSame(fileEntity4, fileServiceImpl.getNearestParentElement(new String[]{""}));
-        verify(fileRepository).getRootDirectory();
+    @AfterEach
+    void tearDown() throws Exception {
+        autoCloseable.close();
     }
 
-    /**
-     * Method under test: {@link FileServiceImpl#getNearestParentElement(String[])}
-     */
     @Test
-    void testGetNearestParentElement3() {
-        FileEntity fileEntity = new FileEntity();
-        fileEntity.setChildren(new ArrayList<>());
-        fileEntity.setContent("Not all who wander are lost");
-        fileEntity.setCreatedAt(1L);
-        fileEntity.setId(123L);
-        fileEntity.setName("Name");
-        fileEntity.setParent(new FileEntity());
-        fileEntity.setType(FileType.REGULAR_FILE);
-        fileEntity.setUpdatedAt(1L);
-
-        FileEntity fileEntity1 = new FileEntity();
-        fileEntity1.setChildren(new ArrayList<>());
-        fileEntity1.setContent("Not all who wander are lost");
-        fileEntity1.setCreatedAt(1L);
-        fileEntity1.setId(123L);
-        fileEntity1.setName("Name");
-        fileEntity1.setParent(fileEntity);
-        fileEntity1.setType(FileType.REGULAR_FILE);
-        fileEntity1.setUpdatedAt(1L);
-
-        FileEntity fileEntity2 = new FileEntity();
-        fileEntity2.setChildren(new ArrayList<>());
-        fileEntity2.setContent("Not all who wander are lost");
-        fileEntity2.setCreatedAt(1L);
-        fileEntity2.setId(123L);
-        fileEntity2.setName("Name");
-        fileEntity2.setParent(fileEntity1);
-        fileEntity2.setType(FileType.REGULAR_FILE);
-        fileEntity2.setUpdatedAt(1L);
-
-        FileEntity fileEntity3 = new FileEntity();
-        fileEntity3.setChildren(new ArrayList<>());
-        fileEntity3.setContent("Not all who wander are lost");
-        fileEntity3.setCreatedAt(1L);
-        fileEntity3.setId(123L);
-        fileEntity3.setName("Name");
-        fileEntity3.setParent(fileEntity2);
-        fileEntity3.setType(FileType.REGULAR_FILE);
-        fileEntity3.setUpdatedAt(1L);
-
-        FileEntity fileEntity4 = new FileEntity();
-        fileEntity4.setChildren(new ArrayList<>());
-        fileEntity4.setContent("Not all who wander are lost");
-        fileEntity4.setCreatedAt(1L);
-        fileEntity4.setId(123L);
-        fileEntity4.setName("Name");
-        fileEntity4.setParent(fileEntity3);
-        fileEntity4.setType(FileType.REGULAR_FILE);
-        fileEntity4.setUpdatedAt(1L);
-        when(fileRepository.getRootDirectory()).thenReturn(fileEntity4);
-        assertThrows(IllegalArgumentException.class, () -> fileServiceImpl.getNearestParentElement(new String[]{}));
+    void findChildIndexByName_existedChildName_returnIndex() {
+        //given
+        String childName = childDirectory.getName();
+        //when
+        int actual = underTest.findChildIndexByName(rootEntity, childName);
+        //then
+        assertThat(actual).isNotEqualTo(-1);
     }
 
-    /**
-     * Method under test: {@link FileServiceImpl#getNearestParentElement(String[])}
-     */
     @Test
-    void testGetNearestParentElement4() {
-        when(fileRepository.getRootDirectory()).thenThrow(new IllegalArgumentException("foo"));
-        assertThrows(IllegalArgumentException.class, () -> fileServiceImpl.getNearestParentElement(new String[]{""}));
-        verify(fileRepository).getRootDirectory();
+    void findChildIndexByName_nonExistedChildName_returnMinusOne() {
+        //given
+        String childName = "abc";
+        //when
+        int actual = underTest.findChildIndexByName(rootEntity, childName);
+        //then
+        assertThat(actual).isEqualTo(-1);
     }
+
+    @Test
+    void findChildIndexByName_parentHasNullChildren_returnMinusOne() {
+        //given
+        String childName = "abc";
+        given(complexPathChildDirectory.getChildren()).isNull();
+        //when
+        int actual = underTest.findChildIndexByName(complexPathChildDirectory, childName);
+        //then
+        assertThat(actual).isEqualTo(-1);
+    }
+
+    @Test
+    void validateDirectoryName_validNames_notThrowException() {
+        //given
+        String[] validNames = {"directory", "new_file", "new file", "new     file", "nEw fILE"};
+        //when
+        //then
+        for (String name : validNames) {
+            assertThatNoException().isThrownBy(() -> underTest.validateDirectoryName(name));
+        }
+    }
+
+    @Test
+    void validateDirectoryName_invalidNames_throwException() {
+        //given
+        String[] invalidNames = {"file.txt", "@tien", "..", "/", ";tien"};
+        //when
+        //then
+        for (String name : invalidNames) {
+            assertThatThrownBy(() -> underTest.validateDirectoryName(name)).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Test
+    void validateDuplicateName_duplicateName_throwException() {
+        //given
+        String name = childDirectory.getName();
+        //when-then
+        assertThatThrownBy(() -> underTest.validateDuplicateName(rootEntity, name))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void validateDuplicateName_notDuplicateName_notThrowException() {
+        //given
+        String name = "123";
+        //when-then
+        assertThatNoException().isThrownBy(() -> underTest.validateDuplicateName(rootEntity, name));
+    }
+
+    @Test
+    void getNearestParentElement_emptyPathElements_throwException() {
+        //given
+        String[] pathElements = {};
+        //when-then
+        assertThatThrownBy(() -> underTest.getNearestParentElement(pathElements))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getNearestParentElement_notRelativePathElements_throwException() {
+        //given
+        String[] pathElements = {"abc", "123"};
+        //when-then
+        assertThatThrownBy(() -> underTest.getNearestParentElement(pathElements))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getNearestParentElement_validRelativePathElements_getFileEntity() {
+        //given
+        String[] pathElements = {"", childDirectory.getName()};
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        FileEntity actual = underTest.getNearestParentElement(pathElements);
+        //then
+        assertThat(actual.getId()).isEqualTo(rootEntity.getId());
+    }
+
+    @Test
+    void getNearestParentElement_invalidRelativePathElements_getFileEntity() {
+        //given
+        String[] pathElements = {"", "123", childDirectory.getName()};
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        //then
+        assertThatThrownBy(() -> underTest.getNearestParentElement(pathElements))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getNearestParentElement_validComplexRelativePathElements_getFileEntity() {
+        //given
+        String[] pathElements = {"", childDirectory.getName(), complexPathChildDirectory.getName()};
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        FileEntity actual = underTest.getNearestParentElement(pathElements);
+        //then
+        assertThat(actual.getId()).isEqualTo(childDirectory.getId());
+    }
+
+    @Test
+    void getFileFromPath_emptyPathElements_throwException() {
+        //given
+        String path = "";
+        //when-then
+        assertThatThrownBy(() -> underTest.getFileFromPath(path))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getFileFromPath_notRelativePathElements_throwException() {
+        //given
+        String path = "/abc/123";
+        //when-then
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+
+        assertThatThrownBy(() -> underTest.getFileFromPath(path))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getFileFromPath_validRelativePathElements_getFileEntity() {
+        //given
+        String path = "/" + childDirectory.getName();
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        FileEntity actual = underTest.getFileFromPath(path);
+        //then
+        assertThat(actual.getId()).isEqualTo(childDirectory.getId());
+    }
+
+    @Test
+    void getFileFromPath_invalidRelativePathElements_getFileEntity() {
+        //given
+        String path = "/123/" + childDirectory.getName();
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        //then
+        assertThatThrownBy(() -> underTest.getFileFromPath(path))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void getFileFromPath_validComplexRelativePathElements_getFileEntity() {
+        //given
+        String[] pathElements = {"", childDirectory.getName(), complexPathChildDirectory.getName()};
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        FileEntity actual = underTest.getNearestParentElement(pathElements);
+        //then
+        assertThat(actual.getId()).isEqualTo(complexPathChildDirectory.getId());
+    }
+
+    @Test
+    void deleteByPath_emptyOrNullPath_throwException() {
+        //given
+        String path = "";
+        //when-then
+        assertThatThrownBy(() -> {
+            underTest.deleteByPath(path);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void deleteByPath_rootPath_throwException() {
+        //given
+        String path = "/";
+        //when-then
+        assertThatThrownBy(() -> {
+            underTest.deleteByPath(path);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void deleteByPath_nonExistedPath_throwException() {
+        //given
+        String path = "/123";
+        //when-then
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        assertThatThrownBy(() -> {
+            underTest.deleteByPath(path);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void deleteByPath_existedPath_returnDeletedDirectory() {
+        //given
+        String path = "/" + childDirectory.getName();
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        when(fileMapper.toDTO(childDirectory)).thenCallRealMethod();
+        FileDTO actual = underTest.deleteByPath(path);
+        //then
+        assertThat(actual.getId()).isEqualTo(childDirectory.getId());
+    }
+
+    @Test
+    void deleteByPath_validComplicatedPath_returnDeletedDirectory() {
+        //given
+        String path = "/" + childDirectory.getName() + "/" + complexPathChildDirectory.getName();
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        when(fileMapper.toDTO(complexPathChildDirectory)).thenCallRealMethod();
+
+        FileDTO actual = underTest.deleteByPath(path);
+
+        //then
+        assertThat(actual.getId()).isEqualTo(complexPathChildDirectory.getId());
+    }
+
+    @Test
+    void moveFile_emptySourcePath_throwException() {
+        //given
+        String sourcePath = "";
+        String destinationPath = "/" + childDirectory.getName();
+        //when-then
+        assertThatThrownBy(() -> {
+            underTest.moveFile(sourcePath, destinationPath);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void moveFile_emptyDestinationPath_throwException() {
+        //given
+        String sourcePath = "/" + childDirectory.getName();
+        ;
+        String destinationPath = "";
+        //when-then
+        assertThatThrownBy(() -> {
+            underTest.moveFile(sourcePath, destinationPath);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void moveFile_destinationPathIsSubSourcePath_throwException() {
+        //given
+        String sourcePath = "/" + childDirectory.getName();
+        String destinationPath = "/" + childDirectory.getName() + "/" + complexPathChildDirectory.getName();
+        //when-then
+        assertThatThrownBy(() -> {
+            underTest.moveFile(sourcePath, destinationPath);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void moveFile_invalidSourcePath_throwException() {
+        //given
+        String sourcePath = "/123";
+        String destinationPath = "/" + childDirectory.getName() + "/" + complexPathChildDirectory.getName();
+        //when-then
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        assertThatThrownBy(() -> {
+            underTest.moveFile(sourcePath, destinationPath);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void moveFile_invalidDestinationPath_throwException() {
+        //given
+        String sourcePath = "/" + childDirectory.getName() + "/" + complexPathChildDirectory.getName();
+        String destinationPath = "/123";
+        //when-then
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        assertThatThrownBy(() -> {
+            underTest.moveFile(sourcePath, destinationPath);
+        }).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void moveFile_validPaths_returnFileEntity() {
+        //given
+        String sourcePath = "/" + childDirectory.getName() + "/" + complexPathChildDirectory.getName();
+        String destinationPath = "/";
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        when(fileMapper.toDTO(complexPathChildDirectory)).thenCallRealMethod();
+        FileDTO actual = underTest.moveFile(sourcePath, destinationPath);
+        //then
+        assertThat(actual.getId()).isEqualTo(complexPathChildDirectory.getId());
+    }
+
+
 }
 

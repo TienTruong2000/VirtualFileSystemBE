@@ -1,5 +1,6 @@
 package org.tientt.services.implementations;
 
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -14,12 +15,14 @@ import org.tientt.services.interfaces.FileService;
 import org.tientt.services.mappers.FileMapper;
 import org.tientt.utils.MessageUtil;
 
+import javax.validation.constraints.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 @Transactional(readOnly = true)
 @Primary
+@Setter
 public class FileServiceImpl implements FileService {
 
     @Autowired
@@ -33,7 +36,7 @@ public class FileServiceImpl implements FileService {
 
     private final Pattern fileNamePattern = Pattern.compile("^[a-zA-Z0-9 _-]+$");
 
-    protected int findChildIndexByName(FileEntity parent, String childName) {
+    protected int findChildIndexByName(@NotNull FileEntity parent, String childName) {
         if (parent.getChildren() == null || parent.getChildren().isEmpty())
             return -1;
         for (int i = 0; i < parent.getChildren().size(); i++) {
@@ -59,10 +62,10 @@ public class FileServiceImpl implements FileService {
 
     protected FileEntity getNearestParentElement(String[] pathElements) {
         //if path begins with / then the first element of pathElements must be ""
-        if (pathElements.length == 0 || !pathElements[0].equals("")){
+        if (pathElements.length == 0 || !pathElements[0].equals("")) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
         }
-        FileEntity parentDirectory =  fileRepository.getRootDirectory();
+        FileEntity parentDirectory = fileRepository.getRootDirectory();
 
         for (int i = 1; i < pathElements.length - 1; i++) {
             String pathElement = pathElements[i];
@@ -75,9 +78,14 @@ public class FileServiceImpl implements FileService {
         return parentDirectory;
     }
 
-    protected FileEntity getFileFromPath(String[] pathElements) {
+    protected FileEntity getFileFromPath(String path) {
+        if (path == null || path.isEmpty())
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
+        if (path.equals("/")) return fileRepository.getRootDirectory();
+
+        String[] pathElements = path.split(PATH_SEPARATOR);
         //if path begins with / then the first element of pathElements must be ""
-        if (pathElements.length == 0 || !pathElements[0].equals("")){
+        if (pathElements.length == 0 || !pathElements[0].equals("")) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
         }
         FileEntity file = fileRepository.getRootDirectory();
@@ -98,12 +106,8 @@ public class FileServiceImpl implements FileService {
         if (path == null || path.isEmpty())
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
         //separate path
-        String[] pathElements = path.split(PATH_SEPARATOR);
-        if (pathElements.length == 0) {
-            //the only time this happens is when the path is "/"
-            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
-        }
-        FileEntity file = getFileFromPath(pathElements);
+        if (path.equals("/")) throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DELETE_ROOT));
+        FileEntity file = getFileFromPath(path);
         if (file.getType() == FileType.ROOT)
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DELETE_ROOT));
         fileRepository.delete(file);
@@ -120,23 +124,21 @@ public class FileServiceImpl implements FileService {
         }
         if (destinationPath.contains(sourcePath))
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_IS_SUB_SOURCE_PATH));
-        String[] sourcePathElements = sourcePath.split(PATH_SEPARATOR);
-        String[] destinationPathElements = destinationPath.split(PATH_SEPARATOR);
 
         FileEntity sourceFile;
         FileEntity destinationFile;
         try {
-            sourceFile = getFileFromPath(sourcePathElements);
+            sourceFile = getFileFromPath(sourcePath);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.SOURCE_PATH_NOT_FOUND));
         }
         try {
-            destinationFile = getFileFromPath(destinationPathElements);
+            destinationFile = getFileFromPath(destinationPath);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_NOT_FOUND));
         }
 
-        if (destinationFile.getType() != FileType.DIRECTORY) {
+        if (destinationFile.getType() != FileType.DIRECTORY && destinationFile.getType() != FileType.ROOT) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_IS_NOT_DIRECTORY));
         }
         sourceFile.setParent(destinationFile);

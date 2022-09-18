@@ -70,13 +70,7 @@ public class TextFileServiceImpl extends FileServiceImpl implements TextFileServ
     public FileDTO getFileByPath(String path) {
         if (path == null || path.isEmpty())
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
-        //separate path
-        String[] pathElements = path.split(PATH_SEPARATOR);
-        if (pathElements.length == 0) {
-            //the only time this happens is when the path is "/"
-            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
-        }
-        FileEntity file = getFileFromPath(pathElements);
+        FileEntity file = getFileFromPath(path);
         if (file.getType() != FileType.REGULAR_FILE)
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.FILE_IS_NOT_TEXT_FILE));
         return fileMapper.toDTO(file);
