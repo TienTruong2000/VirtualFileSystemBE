@@ -74,6 +74,9 @@ public class FileServiceImpl implements FileService {
                 throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
             }
             parentDirectory = parentDirectory.getChildren().get(childIndex);
+            if (parentDirectory.getType() != FileType.DIRECTORY && parentDirectory.getType() != FileType.ROOT){
+                throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.FILE_IS_NOT_DIRECTORY));
+            }
         }
         return parentDirectory;
     }
