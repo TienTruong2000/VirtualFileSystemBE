@@ -1,7 +1,5 @@
 package org.tientt.models.entities;
 
-import java.util.stream.Stream;
-
 public enum FileType {
 
     REGULAR_FILE("-"), DIRECTORY("d"), ROOT("r");

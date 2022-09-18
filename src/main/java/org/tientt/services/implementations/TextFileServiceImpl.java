@@ -18,7 +18,7 @@ import java.time.Clock;
 
 @Service
 @Transactional(readOnly = true)
-public class TextFileServiceImpl extends FileService implements TextFileService {
+public class TextFileServiceImpl extends FileServiceImpl implements TextFileService {
 
     @Value("${file.path.separator}")
     private String PATH_SEPARATOR;
@@ -76,12 +76,7 @@ public class TextFileServiceImpl extends FileService implements TextFileService 
             //the only time this happens is when the path is "/"
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
         }
-        String fileName = pathElements[pathElements.length - 1].trim();
-        FileEntity parentDirectory = getNearestParentElement(pathElements);
-
-        int index = findChildIndexByName(parentDirectory, fileName);
-        if (index == -1)
-            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
-        return fileMapper.toDTO(parentDirectory.getChildren().get(index));
+        FileEntity file = getFileFromPath(pathElements);
+        return fileMapper.toDTO(file);
     }
 }

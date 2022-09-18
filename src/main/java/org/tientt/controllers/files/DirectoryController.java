@@ -7,6 +7,8 @@ import org.tientt.constants.ApiEndPoint;
 import org.tientt.models.dtos.FileDTO;
 import org.tientt.services.interfaces.DirectoryService;
 
+import javax.validation.constraints.NotNull;
+
 @RestController
 @AllArgsConstructor
 public class DirectoryController {
@@ -19,8 +21,15 @@ public class DirectoryController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping(ApiEndPoint.Directory.DIRECTORY_END_POINT)
+    public ResponseEntity<?> getDirectoryByPath(@RequestParam @NotNull String path){
+        FileDTO result = directoryService.getByPath(path);
+        if (result == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping(ApiEndPoint.Directory.DIRECTORY_END_POINT)
-    public ResponseEntity<?> create(@RequestParam String path){
+    public ResponseEntity<?> create(@RequestParam @NotNull String path){
         FileDTO newDirectory = directoryService.create(path, false);
         return ResponseEntity.ok(newDirectory);
     }

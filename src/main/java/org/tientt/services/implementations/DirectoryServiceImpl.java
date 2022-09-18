@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
-public class DirectoryServiceImpl extends FileService implements DirectoryService {
+public class DirectoryServiceImpl extends FileServiceImpl implements DirectoryService {
 
     @Value("${file.path.separator}")
     private String PATH_SEPARATOR;
@@ -69,6 +69,25 @@ public class DirectoryServiceImpl extends FileService implements DirectoryServic
     @Override
     public FileDTO getById(long id) {
         return fileRepository.findById(id).map(fileMapper::toDTO).orElse(null);
+    }
+
+    @Override
+    public FileDTO getByPath(String path) {
+        if (path == null || path.isEmpty())
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
+        //separate path
+        String[] pathElements = path.split(PATH_SEPARATOR);
+        if (pathElements.length == 0) {
+            //the only time this happens is when the path is "/"
+            return fileMapper.toDTO(fileRepository.getRootDirectory());
+        }
+
+        String directoryName = pathElements[pathElements.length - 1].trim();
+        FileEntity parentDirectory = getNearestParentElement(pathElements);
+        int index = findChildIndexByName(parentDirectory, directoryName);
+        if (index == -1)
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
+        return fileMapper.toDTO(parentDirectory.getChildren().get(index));
     }
 
     @Override

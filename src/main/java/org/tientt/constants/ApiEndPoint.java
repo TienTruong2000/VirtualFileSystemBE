@@ -19,4 +19,11 @@ public final class ApiEndPoint {
         public static final String DIRECTORY_END_POINT = API_ENDPOINT + "/directories";
     }
 
+    public static final class File {
+        private File(){}
+
+        public static final String FILE_END_POINT = API_ENDPOINT + "/files";
+        public static final String MOVE_FILE = FILE_END_POINT + "/move";
+    }
+
 }
