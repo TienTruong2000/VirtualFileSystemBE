@@ -25,6 +25,7 @@ public final class MessageConstant {
         public static final String FILE_IS_NOT_DIRECTORY = "error.file.file-is-not-directory";
         public static final String SOURCE_PATH_NOT_FOUND = "error.file.source-path-not-found";
         public static final String DESTINATION_PATH_NOT_FOUND = "error.file.destination-path-not-found";
+        public static final String DELETE_ROOT = "error.file.delete-root";
 
     }
 

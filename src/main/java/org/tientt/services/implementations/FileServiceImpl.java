@@ -58,7 +58,12 @@ public class FileServiceImpl implements FileService {
     }
 
     protected FileEntity getNearestParentElement(String[] pathElements) {
+        //if path begins with / then the first element of pathElements must be ""
+        if (pathElements.length == 0 || !pathElements[0].equals("")){
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
+        }
         FileEntity parentDirectory = fileRepository.getRootDirectory();
+
         for (int i = 1; i < pathElements.length - 1; i++) {
             String pathElement = pathElements[i];
             int childIndex = findChildIndexByName(parentDirectory, pathElement);
@@ -71,8 +76,9 @@ public class FileServiceImpl implements FileService {
     }
 
     protected FileEntity getFileFromPath(String[] pathElements) {
-        if (pathElements.length == 0) {
-            return fileRepository.getRootDirectory();
+        //if path begins with / then the first element of pathElements must be ""
+        if (pathElements.length == 0 || !pathElements[0].equals("")){
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
         }
         FileEntity file = fileRepository.getRootDirectory();
         for (int i = 1; i < pathElements.length; i++) {
@@ -98,6 +104,8 @@ public class FileServiceImpl implements FileService {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
         }
         FileEntity file = getFileFromPath(pathElements);
+        if (file.getType() == FileType.ROOT)
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DELETE_ROOT));
         fileRepository.delete(file);
         return fileMapper.toDTO(file);
     }
