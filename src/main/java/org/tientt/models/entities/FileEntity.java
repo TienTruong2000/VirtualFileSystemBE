@@ -40,7 +40,7 @@ public class FileEntity {
     @JoinColumn(name = "parent_id")
     private FileEntity parent;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     private List<FileEntity> children;
 

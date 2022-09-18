@@ -87,8 +87,19 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    @Transactional
     public FileDTO deleteByPath(String path) {
-        return null;
+        if (path == null || path.isEmpty())
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
+        //separate path
+        String[] pathElements = path.split(PATH_SEPARATOR);
+        if (pathElements.length == 0) {
+            //the only time this happens is when the path is "/"
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.INVALID_NAME));
+        }
+        FileEntity file = getFileFromPath(pathElements);
+        fileRepository.delete(file);
+        return fileMapper.toDTO(file);
     }
 
     @Override
