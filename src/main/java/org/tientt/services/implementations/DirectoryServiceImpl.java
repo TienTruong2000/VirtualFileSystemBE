@@ -91,18 +91,4 @@ public class DirectoryServiceImpl extends FileServiceImpl implements DirectorySe
         return fileMapper.toDTO(directory);
     }
 
-    @Override
-    public List<FileDTO> getAll() {
-        return null;
-    }
-
-    @Override
-    public FileDTO move(String sourcePath, String destinationPath) {
-        return null;
-    }
-
-    @Override
-    public FileDTO deleteFromPath(String path) {
-        return null;
-    }
 }

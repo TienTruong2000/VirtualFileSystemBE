@@ -11,12 +11,4 @@ public interface DirectoryService {
 
     FileDTO getByPath(String path);
 
-    List<FileDTO> getAll();
-
-    FileDTO move(String sourcePath, String destinationPath);
-
-    FileDTO deleteFromPath(String path);
-
-
-
 }

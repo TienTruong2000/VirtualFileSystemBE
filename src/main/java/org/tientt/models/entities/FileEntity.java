@@ -45,7 +45,10 @@ public class FileEntity {
     private List<FileEntity> children;
 
     public long getSize() {
-        if (this.type == FileType.REGULAR_FILE) return content.length();
+        if (this.type == FileType.REGULAR_FILE) {
+            if (content == null) return 0;
+            return content.length();
+        };
         if (this.children == null) return 0;
         return this.children.stream().map(FileEntity::getSize).mapToLong(Long::longValue).sum();
     }
