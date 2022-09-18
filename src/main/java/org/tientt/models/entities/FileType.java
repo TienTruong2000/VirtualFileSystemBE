@@ -2,7 +2,7 @@ package org.tientt.models.entities;
 
 public enum FileType {
 
-    REGULAR_FILE("-"), DIRECTORY("d"), ROOT("r");
+    TEXT_FILE("-"), DIRECTORY("d"), ROOT("r");
 
     private final String text;
 

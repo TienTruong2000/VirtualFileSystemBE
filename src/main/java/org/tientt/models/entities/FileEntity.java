@@ -45,7 +45,7 @@ public class FileEntity {
     private List<FileEntity> children;
 
     public long getSize() {
-        if (this.type == FileType.REGULAR_FILE) {
+        if (this.type == FileType.TEXT_FILE) {
             if (content == null) return 0;
             return content.length();
         };

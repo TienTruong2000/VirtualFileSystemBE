@@ -1,6 +1,7 @@
 package org.tientt.services.implementations;
 
 import de.mkammerer.snowflakeid.SnowflakeIdGenerator;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.time.Clock;
 
 @Service
 @Transactional(readOnly = true)
+@Setter
 public class TextFileServiceImpl extends FileServiceImpl implements TextFileService {
 
     @Value("${file.path.separator}")
@@ -57,7 +59,7 @@ public class TextFileServiceImpl extends FileServiceImpl implements TextFileServ
         newFile.setId(snowflakeIdGenerator.next());
         newFile.setCreatedAt(clock.millis());
         newFile.setUpdatedAt(clock.millis());
-        newFile.setType(FileType.REGULAR_FILE);
+        newFile.setType(FileType.TEXT_FILE);
         newFile.setParent(parentDirectory);
         newFile.setName(fileName);
         newFile.setContent(content);
@@ -71,7 +73,7 @@ public class TextFileServiceImpl extends FileServiceImpl implements TextFileServ
         if (path == null || path.isEmpty())
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.EMPTY_PATH));
         FileEntity file = getFileFromPath(path);
-        if (file.getType() != FileType.REGULAR_FILE)
+        if (file.getType() != FileType.TEXT_FILE)
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.FILE_IS_NOT_TEXT_FILE));
         return fileMapper.toDTO(file);
     }
