@@ -63,7 +63,7 @@ public class FileServiceImpl implements FileService {
             String pathElement = pathElements[i];
             int childIndex = findChildIndexByName(parentDirectory, pathElement);
             if (childIndex == -1) {
-                throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.MISSING_PARENT));
+                throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
             }
             parentDirectory = parentDirectory.getChildren().get(childIndex);
         }
@@ -79,7 +79,7 @@ public class FileServiceImpl implements FileService {
             String pathElement = pathElements[i];
             int childIndex = findChildIndexByName(file, pathElement);
             if (childIndex == -1) {
-                throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.MISSING_PARENT));
+                throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
             }
             file = file.getChildren().get(childIndex);
         }
