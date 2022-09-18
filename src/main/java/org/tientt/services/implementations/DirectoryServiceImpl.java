@@ -1,6 +1,7 @@
 package org.tientt.services.implementations;
 
 import de.mkammerer.snowflakeid.SnowflakeIdGenerator;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@Setter
 public class DirectoryServiceImpl extends FileServiceImpl implements DirectoryService {
 
     @Value("${file.path.separator}")

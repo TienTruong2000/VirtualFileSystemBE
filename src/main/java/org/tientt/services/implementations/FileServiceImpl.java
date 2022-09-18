@@ -62,7 +62,7 @@ public class FileServiceImpl implements FileService {
         if (pathElements.length == 0 || !pathElements[0].equals("")){
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
         }
-        FileEntity parentDirectory = fileRepository.getRootDirectory();
+        FileEntity parentDirectory =  fileRepository.getRootDirectory();
 
         for (int i = 1; i < pathElements.length - 1; i++) {
             String pathElement = pathElements[i];
