@@ -117,7 +117,7 @@ public class FileServiceImpl implements FileService {
         if (file.getType() == FileType.ROOT)
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DELETE_ROOT));
         fileRepository.delete(file);
-        file.getParent().setChildren(file.getParent().getChildren().stream().filter(child -> child.equals(file)).collect(Collectors.toList()));
+        file.getParent().getChildren().remove(file);
         return fileMapper.toDTO(file);
     }
 

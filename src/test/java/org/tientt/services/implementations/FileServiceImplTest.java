@@ -15,6 +15,7 @@ import org.tientt.repositories.FileRepository;
 import org.tientt.services.mappers.FileMapper;
 import org.tientt.services.mappers.FileMapperImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.*;
@@ -55,13 +56,17 @@ class FileServiceImplTest {
         ReflectionTestUtils.setField(underTest, FileServiceImpl.class, "fileMapper", fileMapper, FileMapper.class);
         ReflectionTestUtils.setField(underTest, FileServiceImpl.class, "PATH_SEPARATOR", PATH_SEPARATOR, String.class);
 
+        List<FileEntity> children;
+
 
         rootEntity.setType(FileType.ROOT);
         rootEntity.setId(1);
         rootEntity.setName("root");
         rootEntity.setCreatedAt(0);
         rootEntity.setUpdatedAt(0);
-        rootEntity.setChildren(List.of(childDirectory));
+        children = new ArrayList<>();
+        children.add(childDirectory);
+        rootEntity.setChildren(children);
 
         childDirectory.setCreatedAt(1L);
         childDirectory.setId(123L);
@@ -69,7 +74,10 @@ class FileServiceImplTest {
         childDirectory.setParent(rootEntity);
         childDirectory.setType(FileType.DIRECTORY);
         childDirectory.setUpdatedAt(1L);
-        childDirectory.setChildren(List.of(complexPathChildDirectory, duplidateNameChildDirectory));
+        children = new ArrayList<>();
+        children.add(complexPathChildDirectory);
+        children.add(duplidateNameChildDirectory);
+        childDirectory.setChildren(children);
 
         complexPathChildDirectory.setCreatedAt(1L);
         complexPathChildDirectory.setId(1234L);
