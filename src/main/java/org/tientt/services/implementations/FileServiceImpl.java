@@ -18,6 +18,7 @@ import org.tientt.utils.MessageUtil;
 import javax.validation.constraints.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -116,7 +117,7 @@ public class FileServiceImpl implements FileService {
         if (file.getType() == FileType.ROOT)
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DELETE_ROOT));
         fileRepository.delete(file);
-        file.getParent().getChildren().remove(file);
+        file.getParent().setChildren(file.getParent().getChildren().stream().filter(child -> child.equals(file)).collect(Collectors.toList()));
         return fileMapper.toDTO(file);
     }
 

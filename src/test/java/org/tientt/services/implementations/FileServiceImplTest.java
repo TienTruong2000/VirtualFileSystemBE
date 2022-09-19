@@ -259,10 +259,10 @@ class FileServiceImplTest {
     @Test
     void getFileFromPath_validComplexRelativePathElements_getFileEntity() {
         //given
-        String[] pathElements = {"", childDirectory.getName(), complexPathChildDirectory.getName()};
+        String path = "/" + childDirectory.getName() + "/" + complexPathChildDirectory.getName();
         //when
         when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
-        FileEntity actual = underTest.getNearestParentElement(pathElements);
+        FileEntity actual = underTest.getFileFromPath(path);
         //then
         assertThat(actual.getId()).isEqualTo(complexPathChildDirectory.getId());
     }
@@ -339,7 +339,6 @@ class FileServiceImplTest {
     void moveFile_emptyDestinationPath_throwException() {
         //given
         String sourcePath = "/" + childDirectory.getName();
-        ;
         String destinationPath = "";
         //when-then
         assertThatThrownBy(() -> {

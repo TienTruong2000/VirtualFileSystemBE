@@ -65,20 +65,6 @@ public class FileRepositoryTest {
         assertThat(rootDirectory.getType()).isEqualTo(FileType.ROOT);
     }
 
-    @Test
-    @Transactional
-    void delete() {
-        //given
-        FileEntity childDirectory = fileRepository.findById(123L).get();
-        //when
-        fileRepository.delete(childDirectory);
-        //then
-        FileEntity rootDirectory = fileRepository.getRootDirectory();
-        assertThat(rootDirectory.getChildren()).isNull();
-
-
-    }
-
 
 
 }
