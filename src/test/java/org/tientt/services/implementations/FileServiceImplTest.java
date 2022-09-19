@@ -42,6 +42,8 @@ class FileServiceImplTest {
 
     private final FileEntity complexPathChildDirectory = new FileEntity();
 
+    private final FileEntity duplidateNameChildDirectory = new FileEntity();
+
     @BeforeEach
     void setUp() {
         autoCloseable = MockitoAnnotations.openMocks(this);
@@ -67,14 +69,23 @@ class FileServiceImplTest {
         childDirectory.setParent(rootEntity);
         childDirectory.setType(FileType.DIRECTORY);
         childDirectory.setUpdatedAt(1L);
-        childDirectory.setChildren(List.of(complexPathChildDirectory));
+        childDirectory.setChildren(List.of(complexPathChildDirectory, duplidateNameChildDirectory));
 
         complexPathChildDirectory.setCreatedAt(1L);
-        complexPathChildDirectory.setId(123L);
+        complexPathChildDirectory.setId(1234L);
         complexPathChildDirectory.setName("Complex name");
         complexPathChildDirectory.setParent(childDirectory);
         complexPathChildDirectory.setType(FileType.DIRECTORY);
         complexPathChildDirectory.setUpdatedAt(1L);
+
+        duplidateNameChildDirectory.setCreatedAt(1L);
+        duplidateNameChildDirectory.setId(12345L);
+        duplidateNameChildDirectory.setName("Name");
+        duplidateNameChildDirectory.setParent(rootEntity);
+        duplidateNameChildDirectory.setType(FileType.DIRECTORY);
+        duplidateNameChildDirectory.setUpdatedAt(1L);
+
+
     }
 
     @AfterEach
@@ -382,6 +393,19 @@ class FileServiceImplTest {
         FileDTO actual = underTest.moveFile(sourcePath, destinationPath);
         //then
         assertThat(actual.getId()).isEqualTo(complexPathChildDirectory.getId());
+    }
+
+    @Test
+    void moveFile_duplicateName_returnFileEntity() {
+        //given
+        String sourcePath = "/" + childDirectory.getName() + "/" + duplidateNameChildDirectory.getName();
+        String destinationPath = "/";
+        //when
+        when(fileRepository.getRootDirectory()).thenReturn(rootEntity);
+        //then
+        assertThatThrownBy(() -> {
+            underTest.moveFile(sourcePath, destinationPath);
+        }).isInstanceOf(IllegalArgumentException.class);
     }
 
 

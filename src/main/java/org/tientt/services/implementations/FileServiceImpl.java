@@ -66,7 +66,7 @@ public class FileServiceImpl implements FileService {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
         }
         FileEntity parentDirectory = fileRepository.getRootDirectory();
-
+        //skip the first element since it is ""
         for (int i = 1; i < pathElements.length - 1; i++) {
             String pathElement = pathElements[i];
             int childIndex = findChildIndexByName(parentDirectory, pathElement);
@@ -74,6 +74,7 @@ public class FileServiceImpl implements FileService {
                 throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
             }
             parentDirectory = parentDirectory.getChildren().get(childIndex);
+            //make sure the file is a directory
             if (parentDirectory.getType() != FileType.DIRECTORY && parentDirectory.getType() != FileType.ROOT){
                 throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.FILE_IS_NOT_DIRECTORY));
             }
@@ -92,6 +93,7 @@ public class FileServiceImpl implements FileService {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.PATH_NOT_FOUND));
         }
         FileEntity file = fileRepository.getRootDirectory();
+        //skip the first element since it is ""
         for (int i = 1; i < pathElements.length; i++) {
             String pathElement = pathElements[i];
             int childIndex = findChildIndexByName(file, pathElement);
@@ -114,6 +116,7 @@ public class FileServiceImpl implements FileService {
         if (file.getType() == FileType.ROOT)
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DELETE_ROOT));
         fileRepository.delete(file);
+        file.getParent().getChildren().remove(file);
         return fileMapper.toDTO(file);
     }
 
@@ -125,6 +128,7 @@ public class FileServiceImpl implements FileService {
         if (destinationPath == null || destinationPath.isEmpty()) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_NOT_FOUND));
         }
+        //check if destination path is a sub directory of source path
         if (destinationPath.contains(sourcePath))
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_IS_SUB_SOURCE_PATH));
 
@@ -141,9 +145,16 @@ public class FileServiceImpl implements FileService {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_NOT_FOUND));
         }
 
+        //check if destination path is a directory
         if (destinationFile.getType() != FileType.DIRECTORY && destinationFile.getType() != FileType.ROOT) {
             throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DESTINATION_PATH_IS_NOT_DIRECTORY));
         }
+        //check if the destination path has item with same name as source file
+        int index = findChildIndexByName(destinationFile, sourceFile.getName());
+        if (index != -1){
+            throw new IllegalArgumentException(MessageUtil.getMessage(MessageConstant.File.DUPLICATED_NAME));
+        }
+
         sourceFile.setParent(destinationFile);
         return fileMapper.toDTO(sourceFile);
     }
